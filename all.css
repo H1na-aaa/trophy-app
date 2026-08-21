@@ -81,6 +81,14 @@ h3{
     margin-bottom: 0.5rem;
 }
 
+.login-subtext  {
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    color: #ffffff9a;
+    text-align: center;
+}
+
 .login-form {
     display: flex;
     flex-flow: column;
