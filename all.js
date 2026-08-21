@@ -2451,14 +2451,6 @@ wrapper.addEventListener("pointermove", (event) => {
         return;
     }
 
-event.preventDefault();
-    updateAutoScroll(latestPointerY);
-
-    // 前回の画面更新が終わっていなければ追加実行しない
-    if (moveFrame !== null) {
-        return;
-    }
-
     moveFrame = requestAnimationFrame(() => {
 
         moveFrame = null;
@@ -2740,15 +2732,6 @@ wrapper.addEventListener("pointermove", (event) => {
     // =========================
 
     event.preventDefault();
-
-    updateAutoScroll(latestPointerY);
-
-    // 前回の画面更新が終わっていなければ追加実行しない
-    if (moveFrame !== null) {
-        return;
-    }
-
-event.preventDefault();
 
     updateAutoScroll(latestPointerY);
 
