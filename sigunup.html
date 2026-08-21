@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ログイン | Trophy App</title>
+    <link rel="stylesheet" href="all.css">
+    <script src="all.js" defer></script>
+</head>
+<body>
+    <main class="login new-user">
+        <div class="login-container new-user-container">
+            <form class="login-form">
+                <div class="form-group">
+                    <label for="password">メールアドレス</label>
+                    <input
+                        type="new-email"
+                        id="new-email"
+                        name="new-email"
+                        placeholder=""
+                        required>
+                </div>
+                <div class="form-group">
+                    <label for="password">パスワード</label>
+                    <input
+                        type="new-password"
+                        id="new-password"
+                        name="new-password"
+                        placeholder=""
+                        required>
+                </div>
+                <div class="form-group">
+                    <label for="password">パスワード(確認)</label>
+                    <input
+                        type="new-password-confirm"
+                        id="new-password-confirm"
+                        name="new-password-confirm"
+                        placeholder=""
+                        required>
+                </div>
+                <button type="submit" class="login-button" id="new-user-button">
+                    新規登録
+                </button>
+            </form>
+            <hr class="login-line">
+            <a href="login.html" class="login-link">ログインへ戻る</a>
+        </div>
+    </main>
+</body>
+</html>

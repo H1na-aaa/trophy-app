@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <title>検索 | Trophy App</title>
+    <link rel="stylesheet" href="all.css">
+    <script src="all.js" defer></script>
+</head>
+<body>
+    <!-- ヘッダー -->
+<header class="app-header search-page-header">
+
+    <button
+        type="button"
+        class="header-back"
+        id="search-back-button"
+        aria-label="戻る"
+    >
+        <img
+            src="image/icon/back.webp"
+            alt=""
+            class="header-img"
+        >
+    </button>
+
+    <form
+        class="search-form"
+        id="search-form"
+    >
+        <input
+            type="search"
+            class="search-input"
+            id="search-input"
+            placeholder="トロフィーやカテゴリーを検索"
+            autocomplete="off"
+        >
+    </form>
+
+</header>
+<main class="search-page">
+
+    <p
+        class="search-guide"
+        id="search-guide"
+    >
+        カテゴリー名またはトロフィー名を入力してください
+    </p>
+
+    <p
+        class="search-empty"
+        id="search-empty"
+        hidden
+    >
+        該当するカテゴリーやトロフィーはありません
+    </p>
+
+    <section
+        class="search-result-section"
+        id="search-category-section"
+        hidden
+    >
+        <h2 class="search-result-title">
+            カテゴリー
+        </h2>
+
+        <div
+            class="search-result-list"
+            id="search-category-results"
+        ></div>
+    </section>
+
+    <section
+        class="search-result-section"
+        id="search-trophy-section"
+        hidden
+    >
+        <h2 class="search-result-title">
+            トロフィー
+        </h2>
+
+        <div
+            class="search-result-list"
+            id="search-trophy-results"
+        ></div>
+    </section>
+
+</main>
+</body>
+</html>

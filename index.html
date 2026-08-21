@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ホーム | Trophy App</title>
+    <link rel="stylesheet" href="all.css">
+    <script src="all.js" defer></script>
+</head>
+<body>
+<header class="app-header">
+    <button class="header-back">
+        <img src="image/icon/back.webp" alt="戻る" class="header-back hidden">
+    </button>
+    <h1 class="header-title">トロフィー一覧</h1>
+    <div class="header-right">
+        <button class="header-search">
+            <img src="image/icon/search.webp" alt="検索" class="header-img">
+        </button>
+        <button class="header-setting">
+            <img src="image/icon/settings.webp" alt="設定" class="header-img" >
+        </button>
+    </div>
+</header>
+<section class="trophy-summary">
+    <h2>レアリティ別トロフィー一覧</h2>
+    <div class="trophy-container">
+        <button class="trophy-card" data-rarity="rainbow">
+            <img src="image/icon/rainbow.webp" alt="">
+            <p class="trophy-progress">
+                <span class="current">○○○</span>
+                    /
+                <span class="total">○○○</span>
+            </p>
+            <div
+                class="rarity-progress-bar"
+                role="progressbar"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="0"
+            >
+    <div class="rarity-progress-fill"></div>
+</div>
+        </button>
+
+        <button class="trophy-card" data-rarity="gold">
+            <img src="image/icon/gold.webp" alt="">
+            <p class="trophy-progress">
+                <span class="current">○○○</span>
+                    /
+                <span class="total">○○○</span>
+            </p>
+            <div
+                class="rarity-progress-bar"
+                role="progressbar"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="0"
+            >
+    <div class="rarity-progress-fill"></div>
+</div>
+        </button>
+
+        <button class="trophy-card" data-rarity="silver">
+            <img src="image/icon/silver.webp" alt="">
+            <p class="trophy-progress">
+                <span class="current">○○○</span>
+                    /
+                <span class="total">○○○</span>
+            </p>
+            <div
+                class="rarity-progress-bar"
+                role="progressbar"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="0"
+            >
+    <div class="rarity-progress-fill"></div>
+</div>
+        </button>
+
+        <button class="trophy-card" data-rarity="bronze">
+            <img src="image/icon/bronze.webp" alt="">
+            <p class="trophy-progress">
+                <span class="current">○○○</span>
+                    /
+                <span class="total">○○○</span>
+            </p>
+            <div
+                class="rarity-progress-bar"
+                role="progressbar"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="0"
+            >
+    <div class="rarity-progress-fill"></div>
+</div>
+        </button>
+    </div>
+    <h2>カテゴリー一覧</h2>
+</section>
+<div class="trophy-popup" id="trophy-popup">
+    <div class="trophy-popup-container">
+        <button class="popup-close-button">
+            ▼
+        </button>
+        <div class="popup-content">
+            <img
+                class="popup-trophy-image"
+                src=""
+                alt="">
+            <p class="popup-progress">
+                <span class="popup-current"></span>
+                /
+                <span class="popup-total"></span>
+            </p>
+            <div class="popup-progress-bar">
+                <div
+                    class="popup-progress-fill"
+                    id="popup-progress-fill">
+                </div>
+            </div>
+            <div id="trophy-list"></div>
+        </div>
+    </div>
+</div>
+<main class="category-list">
+    <div id="category-list-container"></div>
+        <button class="add-button" id="category-add-button">
+            <span class="add-icon">＋</span>
+            <span class="add-text">
+                    カテゴリーを追加
+            </span>
+        </button>        
+    </main>
+    <div class="category-overlay" id="trophy-overlay"></div>
+    <div class="category-menu" id="trophy-menu">
+    <button class="category-menu-item" id="rename-trophy">
+        名前変更
+    </button>
+    <button class="category-menu-item" id="trophy-image">
+        画像変更
+    </button>
+    <button class="category-menu-item" id="change-category">
+        カテゴリー変更
+    </button>
+    <button class="category-menu-item" id="change-rarity">
+        レアリティ変更
+    </button>
+    <button class="category-menu-item" id="toggle-complete">
+        クリア済みにする
+    </button>
+    <button class="category-menu-item" id="change-complete-date">
+        クリア日時変更
+    </button>
+    <button class="category-menu-item delete" id="delete-trophy">
+        削除
+    </button>
+</div>
+<div class="category-overlay" id="category-overlay"></div>
+<div class="category-menu" id="category-menu">
+    <button class="category-menu-item" id="rename-category">
+        名前変更
+    </button>
+    <button class="category-menu-item" id="category-image">
+        画像変更
+    </button>
+    <button class="category-menu-item delete" id="delete-category">
+        削除
+    </button>
+</div>
+<div
+    class="edit-name-modal"
+    id="category-modal">
+    <div class="edit-name-modal-content">
+        <h2 class="edit-name-modal-title">
+            カテゴリーを作成
+        </h2>
+        <!-- 画像 -->
+        <div class="edit-image-preview-wrapper">
+            <img
+                class="edit-image-preview"
+                id="category-create-preview"
+                src="image/icon/default.webp"
+                alt="カテゴリー画像のプレビュー">
+        </div>
+        <input
+            type="file"
+            id="category-create-image"
+            accept="image/*"
+            hidden>
+        <button
+            type="button"
+            class="edit-image-select-button"
+            id="category-create-select-image">
+            画像を選択
+        </button>
+        <!-- 名前 -->
+        <input
+            type="text"
+            class="edit-name-input"
+            id="category-create-name"
+            maxlength="30"
+            placeholder="カテゴリー名を入力">
+        <!-- 操作ボタン -->
+        <div class="edit-name-modal-buttons">
+            <button
+                type="button"
+                class="edit-name-cancel-button"
+                id="cancel-button">
+                キャンセル
+            </button>
+            <button
+                type="button"
+                class="edit-name-confirm-button"
+                id="create-button">
+                作成
+            </button>
+        </div>
+    </div>
+</div>
+<div class="edit-name-modal" id="edit-name-modal">
+    <div class="edit-name-modal-content" id="rename-category">
+        <h2 class="edit-name-modal-title" id="edit-name-modal-title">
+            名前変更
+        </h2>
+        <div class="edit-main-title-field">
+            <label
+                class="edit-input-label"
+                id="edit-name-label"
+                for="edit-name-input">
+                トロフィー名
+            </label>
+            <input
+                type="text"
+                class="edit-name-input"
+                id="edit-name-input"
+                maxlength="30"
+                placeholder="トロフィー名を入力">
+        </div>
+            <div
+            class="edit-subtitle-field"
+            id="edit-subtitle-field"
+            hidden>
+            <label
+            class="edit-input-label"
+            for="edit-subtitle-input">
+                サブテキスト
+            </label>
+            <input
+                type="text"
+                class="edit-name-input"
+                id="edit-subtitle-input"
+                maxlength="30"
+                placeholder="サブテキストを入力">
+            </div>
+            <div class="edit-name-modal-buttons">
+            <button
+                type="button"
+                class="edit-name-cancel-button"
+                id="edit-name-cancel-button">
+                キャンセル
+            </button>
+            <button
+                type="button"
+                class="edit-name-confirm-button"
+                id="edit-name-confirm-button">
+                変更
+            </button>
+        </div>
+    </div>
+</div>
+<div class="edit-image-modal" id="edit-image-modal">
+
+    <div class="edit-image-modal-content">
+
+        <h2 class="edit-image-modal-title" id="edit-image-modal-title">
+            画像変更
+        </h2>
+
+        <div class="edit-image-preview-wrapper">
+
+            <img
+                class="edit-image-preview"
+                id="edit-image-preview"
+                src="image/icon/default.webp"
+                alt="選択した画像のプレビュー"
+            >
+
+        </div>
+
+        <input
+            type="file"
+            id="edit-image-input"
+            accept="image/*"
+            hidden
+        >
+
+        <button
+            type="button"
+            class="edit-image-select-button"
+            id="edit-image-select-button"
+        >
+            画像を選択
+        </button>
+
+        <div class="edit-image-modal-buttons">
+
+            <button
+                type="button"
+                class="edit-image-cancel-button"
+                id="edit-image-cancel-button"
+            >
+                キャンセル
+            </button>
+
+            <button
+                type="button"
+                class="edit-image-confirm-button"
+                id="edit-image-confirm-button"
+            >
+                変更
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+<div class="change-category-modal" id="change-category-modal">
+    <div class="change-category-modal-content">
+        <h2
+            class="change-category-modal-title"
+            id="change-category-modal-title">
+            カテゴリー変更
+        </h2>
+        <div
+            class="change-category-list"
+            id="change-category-list">
+        </div>
+        <div class="change-category-modal-buttons">
+            <button
+                type="button"
+                class="change-category-cancel-button"
+                id="change-category-cancel-button">
+                キャンセル
+            </button>
+            <button
+                type="button"
+                class="change-category-confirm-button"
+                id="change-category-confirm-button">
+                変更
+            </button>
+        </div>
+    </div>
+</div>
+<div
+    class="change-rarity-modal"
+    id="change-rarity-modal"
+>
+    <div class="change-rarity-modal-content">
+        <h2 class="change-rarity-modal-title">
+            レアリティ変更
+        </h2>
+        <div
+            class="change-rarity-list"
+            id="change-rarity-list"
+        ></div>
+        <div class="change-rarity-modal-buttons">
+            <button
+                type="button"
+                class="change-rarity-cancel-button"
+                id="change-rarity-cancel-button"
+            >
+                キャンセル
+            </button>
+            <button
+                type="button"
+                class="change-rarity-confirm-button"
+                id="change-rarity-confirm-button"
+            >
+                変更
+            </button>
+        </div>
+    </div>
+</div>
+<div class="change-complete-date-modal" id="change-complete-date-modal">
+    <div class="change-complete-date-modal-content">
+        <h2 class="change-complete-date-modal-title">
+            クリア日時を変更
+        </h2>
+        <input
+            type="date"
+            class="change-complete-date-input"
+            id="change-complete-date-input"
+        >
+        <div class="change-complete-date-modal-buttons">
+            <button
+                type="button"
+                class="change-complete-date-cancel-button"
+                id="change-complete-date-cancel-button"
+            >
+                キャンセル
+            </button>
+            <button
+                type="button"
+                class="change-complete-date-confirm-button"
+                id="change-complete-date-confirm-button"
+            >
+                変更
+            </button>
+        </div>
+    </div>
+</div>
+<div
+    class="delete-trophy-modal"
+    id="delete-trophy-modal"
+>
+    <div class="delete-trophy-modal-content">
+        <h2 class="delete-trophy-modal-title">
+            トロフィーを削除しますか？
+        </h2>
+        <p class="delete-trophy-modal-text">
+            この操作は取り消せません。
+        </p>
+        <div class="delete-trophy-modal-buttons">
+            <button
+                type="button"
+                class="delete-trophy-cancel-button"
+                id="delete-trophy-cancel-button"
+            >
+                キャンセル
+            </button>
+            <button
+                type="button"
+                class="delete-trophy-confirm-button"
+                id="delete-trophy-confirm-button"
+            >
+                削除
+            </button>
+        </div>
+    </div>
+</div>
+<div
+    class="delete-category-modal"
+    id="delete-category-modal"
+>
+    <div class="delete-category-modal-content">
+        <h2 class="delete-category-modal-title">
+            カテゴリーを削除しますか？
+        </h2>
+        <p class="delete-category-modal-text">
+            この操作は取り消せません。
+        </p>
+        <div class="delete-category-modal-buttons">
+            <button
+                type="button"
+                class="delete-category-cancel-button"
+                id="delete-category-cancel-button"
+            >
+                キャンセル
+            </button>
+            <button
+                type="button"
+                class="delete-category-next-button"
+                id="delete-category-next-button"
+            >
+                確認
+            </button>
+        </div>
+    </div>
+</div>
+<div
+    class="delete-category-final-modal"
+    id="delete-category-final-modal"
+>
+    <div class="delete-category-final-modal-content">
+        <h2 class="delete-category-final-modal-title">
+            本当に削除しますか？
+        </h2>
+        <p class="delete-category-final-modal-text">
+            中に入っているトロフィーもすべて削除されます。
+        </p>
+        <div class="delete-category-final-modal-buttons">
+            <button
+                type="button"
+                class="delete-category-final-cancel-button"
+                id="delete-category-final-cancel-button"
+            >
+                戻る
+            </button>
+            <button
+                type="button"
+                class="delete-category-final-confirm-button"
+                id="delete-category-final-confirm-button"
+            >
+                削除
+            </button>
+        </div>
+    </div>
+</div>
+<div
+    id="trophy-notification"
+    class="trophy-notification"
+>
+    <img
+        id="trophy-notification-image"
+        class="trophy-notification-image"
+        src=""
+        alt=""
+    >
+    <div class="trophy-notification-info">
+        <p class="trophy-notification-label">
+            クリア済み ✓
+        </p>
+        <p
+            id="trophy-notification-title"
+            class="trophy-notification-title"
+        ></p>
+        <p
+            id="trophy-notification-subtitle"
+            class="trophy-notification-subtitle"
+        ></p>
+    </div>
+</div>
+
+<!-- チュートリアルポップアップ-->
+<div
+    id="tutorial-modal"
+    class="tutorial-modal"
+>
+    <div class="tutorial-modal-content">
+        <p>
+            カテゴリー、トロフィーを作成して<br>
+            オリジナルのトロフィーを獲得しよう！
+        </p>
+        <p>
+            初めからあるトロフィーにも<br>挑戦してみよう！
+        </p>
+        <button
+            id="tutorial-ok-button"
+            type="button"
+        >
+            OK
+        </button>
+    </div>
+</div>
+</body>
+</html>

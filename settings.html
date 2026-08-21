@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>設定 | Trophy App</title>
+    <link rel="stylesheet" href="all.css">
+    <script src="all.js" defer></script>
+</head>
+<body>
+<header class="app-header">
+    <button
+        type="button"
+        class="header-back"
+        id="search-back-button"
+        aria-label="戻る"
+    >
+        <img
+            src="image/icon/back.webp"
+            alt=""
+            class="header-img"
+        >
+    </button>
+
+    <h1 class="header-title">設定</h1>
+</header>
+<main>
+    <section class="settings">
+    <div class="settings-item" id="logout-button">
+        <span>ログアウト</span>
+    </div>
+    </section>
+</main>
+<div class="logout-modal" id="logout-modal">
+    <div class="logout-modal-content">
+
+        <h2 class="logout-modal-title">
+            ログアウト
+        </h2>
+
+        <p class="logout-modal-text">
+            ログアウトしますか？
+        </p>
+
+        <div class="logout-modal-buttons">
+            <button
+                type="button"
+                class="logout-cancel-button"
+                id="logout-no"
+            >
+                いいえ
+            </button>
+
+            <button
+                type="button"
+                class="logout-confirm-button"
+                id="logout-yes"
+            >
+                はい
+            </button>
+        </div>
+
+    </div>
+</div>
+</body>
+</html>
