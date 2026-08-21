@@ -2256,6 +2256,59 @@ if (categoryImageButton) {
 
 }
 
+// ドラッグ中の画面端自動スクロール
+let autoScrollY = 0;
+let autoScrollAnimation = null;
+
+function updateAutoScroll(pointerY) {
+    autoScrollY = pointerY;
+    if (autoScrollAnimation !== null) {
+        return;
+    }
+    function scroll() {
+        const edgeSize = 100;
+        const maxSpeed = 10;
+        let speed = 0;
+        if (autoScrollY < edgeSize) {
+            speed =
+                -maxSpeed *
+                (1 - autoScrollY / edgeSize);
+
+        } else if (
+            autoScrollY >
+            window.innerHeight - edgeSize
+        ) {
+            const distance =
+                window.innerHeight - autoScrollY;
+            speed =
+                maxSpeed *
+                (1 - distance / edgeSize);
+        }
+        if (speed !== 0) {
+            window.scrollBy(0, speed);
+            autoScrollAnimation =
+                requestAnimationFrame(scroll);
+        } else {
+
+            autoScrollAnimation = null;
+        }
+    }
+    autoScrollAnimation =
+        requestAnimationFrame(scroll);
+}
+
+
+function stopAutoScroll() {
+
+    if (autoScrollAnimation !== null) {
+
+        cancelAnimationFrame(
+            autoScrollAnimation
+        );
+
+        autoScrollAnimation = null;
+    }
+}
 //　===カテゴリー変更
 //　要素取得
 let selectedCategoryId = null;
@@ -2275,6 +2328,7 @@ function enableCategoryDrag(wrapper) {
     let moveFrame = null;
     let latestPointerX = 0;
     let latestPointerY = 0;
+    let lastTouchY = 0;
     let dragPreviewHeight = 0;
 
 
@@ -2290,6 +2344,8 @@ function enableCategoryDrag(wrapper) {
 
         activePointerId = event.pointerId;
 
+        lastTouchY = event.clientY;
+
         const originalRect =
             wrapper.getBoundingClientRect();
 
@@ -2299,15 +2355,19 @@ function enableCategoryDrag(wrapper) {
         pointerOffsetY =
             event.clientY - originalRect.top;
 
-        pressTimer = setTimeout(() => {
+pressTimer = setTimeout(() => {
 
-            isDragging = true;
+    isDragging = true;
 
-            wrapper.classList.add("dragging");
+    wrapper.classList.add("dragging");
 
-            document.body.classList.add(
-                "category-dragging"
-            );
+    document.body.classList.add(
+        "category-dragging"
+    );
+
+                document.body.classList.add(
+                    "category-dragging"
+                );
 
             // 指についてくる複製を作成
             dragPreview =
@@ -2351,14 +2411,48 @@ function enableCategoryDrag(wrapper) {
 
 wrapper.addEventListener("pointermove", (event) => {
 
+    latestPointerX = event.clientX;
+    latestPointerY = event.clientY;
+
+    // =========================
+    // まだドラッグしていない
+    // =========================
     if (!isDragging || !dragPreview) {
+
+        const deltaY =
+            lastTouchY - event.clientY;
+
+        // 少しでも上下に動いたら
+        // 長押しをキャンセル
+        if (Math.abs(deltaY) > 5) {
+
+            clearTimeout(pressTimer);
+            pressTimer = null;
+        }
+
+        // 通常のページスクロール
+        window.scrollBy(0, deltaY);
+
+        lastTouchY = event.clientY;
+
         return;
     }
 
+    // =========================
+    // ドラッグ中
+    // =========================
+
     event.preventDefault();
 
-    latestPointerX = event.clientX;
-    latestPointerY = event.clientY;
+    updateAutoScroll(latestPointerY);
+
+    // 前回の画面更新が終わっていなければ追加実行しない
+    if (moveFrame !== null) {
+        return;
+    }
+
+event.preventDefault();
+    updateAutoScroll(latestPointerY);
 
     // 前回の画面更新が終わっていなければ追加実行しない
     if (moveFrame !== null) {
@@ -2424,6 +2518,8 @@ if (insertBeforeItem) {
 });
 
     function finishDrag() {
+        
+        stopAutoScroll();
         if (
     dropIndicator &&
     dropIndicator.parentElement
@@ -2529,6 +2625,7 @@ function enableTrophyDrag(wrapper) {
     let moveFrame = null;
     let latestPointerX = 0;
     let latestPointerY = 0;
+    let lastTouchY = 0;
     let dragPreviewHeight = 0;
 
 
@@ -2544,6 +2641,8 @@ function enableTrophyDrag(wrapper) {
 
         activePointerId = event.pointerId;
 
+        lastTouchY = event.clientY;
+
         const originalRect =
             wrapper.getBoundingClientRect();
 
@@ -2553,15 +2652,19 @@ function enableTrophyDrag(wrapper) {
         pointerOffsetY =
             event.clientY - originalRect.top;
 
-        pressTimer = setTimeout(() => {
+pressTimer = setTimeout(() => {
 
-            isDragging = true;
+    isDragging = true;
 
-            wrapper.classList.add("dragging");
+    wrapper.classList.add("dragging");
 
-            document.body.classList.add(
-                "trophy-dragging"
-            );
+    document.body.classList.add(
+        "trophy-dragging"
+    );
+
+                document.body.classList.add(
+                    "trophy-dragging"
+                );
 
             // 指についてくる複製を作成
             dragPreview =
@@ -2605,14 +2708,49 @@ function enableTrophyDrag(wrapper) {
 
 wrapper.addEventListener("pointermove", (event) => {
 
+    latestPointerX = event.clientX;
+    latestPointerY = event.clientY;
+
+    // =========================
+    // まだドラッグしていない
+    // =========================
     if (!isDragging || !dragPreview) {
+
+        const deltaY =
+            lastTouchY - event.clientY;
+
+        // 少しでも上下に動いたら
+        // 長押しをキャンセル
+        if (Math.abs(deltaY) > 5) {
+
+            clearTimeout(pressTimer);
+            pressTimer = null;
+        }
+
+        // 通常のページスクロール
+        window.scrollBy(0, deltaY);
+
+        lastTouchY = event.clientY;
+
         return;
     }
 
+    // =========================
+    // ドラッグ中
+    // =========================
+
     event.preventDefault();
 
-    latestPointerX = event.clientX;
-    latestPointerY = event.clientY;
+    updateAutoScroll(latestPointerY);
+
+    // 前回の画面更新が終わっていなければ追加実行しない
+    if (moveFrame !== null) {
+        return;
+    }
+
+event.preventDefault();
+
+    updateAutoScroll(latestPointerY);
 
     // 前回の画面更新が終わっていなければ追加実行しない
     if (moveFrame !== null) {
@@ -2725,6 +2863,7 @@ if (insertBeforeItem) {
 });
 
     function finishDrag() {
+        stopAutoScroll();
         if (
     dropIndicator &&
     dropIndicator.parentElement
