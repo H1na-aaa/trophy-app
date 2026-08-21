@@ -1,11 +1,43 @@
+// 疑似ログイン管理
+// ※Firebase導入後、この部分をFirebase認証に置き換える
+
+const currentPage = window.location.pathname.split("/").pop();
+
+// index.htmlを開いたとき
+if (currentPage === "index.html" || currentPage === "") {
+
+    const isLoggedIn =
+        localStorage.getItem("isLoggedIn") === "true";
+
+    // ログインしていなければログイン画面へ
+    if (!isLoggedIn) {
+        window.location.href = "login.html";
+    }
+}
 // ログインボタン
-const loginButton = document.getElementById("login-button");
+const loginButton =
+    document.getElementById("login-button");
 
 if (loginButton) {
-    loginButton.addEventListener("click", function (event) {
-        event.preventDefault();
-        window.location.href = "index.html";
-    });
+
+    loginButton.addEventListener(
+        "click",
+        function (event) {
+
+            event.preventDefault();
+
+            // 疑似的にログイン状態を保存
+            localStorage.setItem(
+                "isLoggedIn",
+                "true"
+            );
+
+            // ホーム画面へ
+            window.location.href =
+                "index.html";
+        }
+    );
+
 }
 
 // 新規登録
@@ -4919,9 +4951,18 @@ if (logoutButton && logoutModal) {
     });
 
     // はい
-    logoutYes.addEventListener("click", () => {
-        window.location.href = "login.html";
-    });
+logoutYes.addEventListener("click", () => {
+
+    // ログイン状態を削除
+    localStorage.removeItem(
+        "isLoggedIn"
+    );
+
+    // ログイン画面へ
+    window.location.href =
+        "login.html";
+
+});
 }
 
 // 初回チュートリアル
