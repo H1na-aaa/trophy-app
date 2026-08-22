@@ -2472,26 +2472,24 @@ wrapper.addEventListener("pointermove", (event) => {
     latestPointerY = event.clientY;
 
     // =========================
-    // まだドラッグしていない
+    // ドラッグしていない
     // =========================
     if (
-    !isDragging &&
-    !dragPreview &&
-    event.pointerType === "touch"
-) {
+        !isDragging &&
+        !dragPreview &&
+        event.pointerType === "touch"
+    ) {
 
         const deltaY =
             lastTouchY - event.clientY;
 
-        // 少しでも上下に動いたら
-        // 長押しをキャンセル
+        // 少しでも動いたら長押しをキャンセル
         if (Math.abs(deltaY) > 5) {
-
             clearTimeout(pressTimer);
             pressTimer = null;
         }
 
-        // 通常のページスクロール
+        // 通常スクロール
         window.scrollBy(0, deltaY);
 
         lastTouchY = event.clientY;
@@ -2502,12 +2500,15 @@ wrapper.addEventListener("pointermove", (event) => {
     // =========================
     // ドラッグ中
     // =========================
+    if (!isDragging || !dragPreview) {
+        return;
+    }
 
     event.preventDefault();
 
     updateAutoScroll(latestPointerY);
 
-    // 前回の画面更新が終わっていなければ追加実行しない
+    // 前回の画面更新が終わっていなければ追加しない
     if (moveFrame !== null) {
         return;
     }
@@ -2516,7 +2517,7 @@ wrapper.addEventListener("pointermove", (event) => {
 
         moveFrame = null;
 
-        // 指についてくる複製だけを移動
+        // 指についてくる複製
         dragPreview.style.left =
             `${latestPointerX - pointerOffsetX}px`;
 
@@ -2530,13 +2531,16 @@ wrapper.addEventListener("pointermove", (event) => {
 
         if (!container) return;
 
-        const insertPositionY = latestPointerY;
+        const insertPositionY =
+            latestPointerY;
 
         const otherWrappers = [
             ...container.querySelectorAll(
                 ".category-wrapper"
             )
-        ].filter((item) => item !== wrapper);
+        ].filter(
+            (item) => item !== wrapper
+        );
 
         const insertBeforeItem =
             otherWrappers.find((item) => {
@@ -2544,123 +2548,29 @@ wrapper.addEventListener("pointermove", (event) => {
                 const rect =
                     item.getBoundingClientRect();
 
-               return (
-                insertPositionY <
-                rect.top + rect.height / 2
-            );
-
+                return (
+                    insertPositionY <
+                    rect.top + rect.height / 2
+                );
             });
 
-if (insertBeforeItem) {
+        if (insertBeforeItem) {
 
-    container.insertBefore(
-        dropIndicator,
-        insertBeforeItem
-    );
+            container.insertBefore(
+                dropIndicator,
+                insertBeforeItem
+            );
 
-} else {
+        } else {
 
-    container.appendChild(
-        dropIndicator
-    );
-
-}
+            container.appendChild(
+                dropIndicator
+            );
+        }
 
     });
 
 });
-
-    function finishDrag() {
-        
-        stopAutoScroll();
-        if (
-    dropIndicator &&
-    dropIndicator.parentElement
-) {
-
-    dropIndicator.parentElement.insertBefore(
-        wrapper,
-        dropIndicator
-    );
-
-    dropIndicator.remove();
-    dropIndicator = null;
-
-}
-
-        clearTimeout(pressTimer);
-
-        if (moveFrame !== null) {
-        cancelAnimationFrame(moveFrame);
-        moveFrame = null;
-        }
-
-        if (!isDragging) return;
-
-        isDragging = false;
-
-        wrapper.classList.remove("dragging");
-
-        document.body.classList.remove(
-            "category-dragging"
-        );
-
-        if (dragPreview) {
-
-            dragPreview.remove();
-            dragPreview = null;
-
-        }
-
-        const wrappers =
-            document.querySelectorAll(
-                "#category-list-container " +
-                ".category-wrapper"
-            );
-
-        wrappers.forEach((item, index) => {
-
-            const id =
-                Number(item.dataset.categoryId);
-
-            if (categoryData[id]) {
-
-                categoryData[id].order =
-                    index;
-
-            }
-
-        });
-
-        saveAppData();
-
-        // ドラッグ終了直後のページ移動を防ぐ
-        wrapper.addEventListener(
-            "click",
-            (event) => {
-
-                event.preventDefault();
-                event.stopImmediatePropagation();
-
-            },
-            {
-                capture: true,
-                once: true
-            }
-        );
-
-    }
-
-
-    wrapper.addEventListener(
-        "pointerup",
-        finishDrag
-    );
-
-    wrapper.addEventListener(
-        "pointercancel",
-        finishDrag
-    );
 
 }
 
@@ -2794,13 +2704,17 @@ wrapper.addEventListener("pointermove", (event) => {
         return;
     }
 
-    // =========================
-    // ドラッグ中
-    // =========================
+// =========================
+// ドラッグ中
+// =========================
 
-    event.preventDefault();
+if (!isDragging || !dragPreview) {
+    return;
+}
 
-    updateAutoScroll(latestPointerY);
+event.preventDefault();
+
+updateAutoScroll(latestPointerY);
 
     // 前回の画面更新が終わっていなければ追加実行しない
     if (moveFrame !== null) {
