@@ -2386,6 +2386,7 @@ function enableCategoryDrag(wrapper) {
     let latestPointerX = 0;
     let latestPointerY = 0;
     let lastTouchY = 0;
+    let isTouchScrolling = false;
     let dragPreviewHeight = 0;
 
 
@@ -2402,6 +2403,8 @@ function enableCategoryDrag(wrapper) {
         activePointerId = event.pointerId;
 
         lastTouchY = event.clientY;
+
+        isTouchScrolling = false;
 
         const originalRect =
             wrapper.getBoundingClientRect();
@@ -2475,28 +2478,30 @@ wrapper.addEventListener("pointermove", (event) => {
     // ドラッグしていない
     // =========================
     if (
-        !isDragging &&
-        !dragPreview &&
-        event.pointerType === "touch"
-    ) {
+    !isDragging &&
+    !dragPreview &&
+    event.pointerType === "touch"
+) {
 
-        const deltaY =
-            lastTouchY - event.clientY;
+    const deltaY =
+        lastTouchY - event.clientY;
 
-        // 少しでも動いたら長押しをキャンセル
-        if (Math.abs(deltaY) > 5) {
-            clearTimeout(pressTimer);
-            pressTimer = null;
-        }
+    // 指が実際に動いたときだけ
+    // 通常スクロールを開始
+    if (Math.abs(deltaY) > 5) {
 
-        // 通常スクロール
+        isTouchScrolling = true;
+
+        clearTimeout(pressTimer);
+        pressTimer = null;
+
         window.scrollBy(0, deltaY);
 
         lastTouchY = event.clientY;
-
-        return;
     }
 
+    return;
+}
     // =========================
     // ドラッグ中
     // =========================
@@ -2591,6 +2596,7 @@ function enableTrophyDrag(wrapper) {
     let latestPointerX = 0;
     let latestPointerY = 0;
     let lastTouchY = 0;
+    let isTouchScrolling = false;
     let dragPreviewHeight = 0;
 
 
@@ -2607,6 +2613,8 @@ function enableTrophyDrag(wrapper) {
         activePointerId = event.pointerId;
 
         lastTouchY = event.clientY;
+
+        isTouchScrolling = false;
 
         const originalRect =
             wrapper.getBoundingClientRect();
@@ -2677,32 +2685,33 @@ wrapper.addEventListener("pointermove", (event) => {
     latestPointerY = event.clientY;
 
     // =========================
-    // まだドラッグしていない
+    // ドラッグしていない
     // =========================
-    if (
+if (
     !isDragging &&
     !dragPreview &&
     event.pointerType === "touch"
 ) {
 
-        const deltaY =
-            lastTouchY - event.clientY;
+    const deltaY =
+        lastTouchY - event.clientY;
 
-        // 少しでも上下に動いたら
-        // 長押しをキャンセル
-        if (Math.abs(deltaY) > 5) {
+    // 指が実際に動いたときだけ
+    // 通常スクロールを開始
+    if (Math.abs(deltaY) > 5) {
 
-            clearTimeout(pressTimer);
-            pressTimer = null;
-        }
+        isTouchScrolling = true;
 
-        // 通常のページスクロール
+        clearTimeout(pressTimer);
+        pressTimer = null;
+
         window.scrollBy(0, deltaY);
 
         lastTouchY = event.clientY;
-
-        return;
     }
+
+    return;
+}
 
 // =========================
 // ドラッグ中
