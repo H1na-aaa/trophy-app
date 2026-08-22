@@ -1390,7 +1390,7 @@ body.trophy-dragging {
 
 .trophy-notification {
     position: fixed;
-    top: 1rem;
+    top: 5rem;
     left: 50%;
     width: calc(100% - 2rem);
     max-width: 32rem;

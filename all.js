@@ -1,5 +1,4 @@
 // 疑似ログイン管理
-// ※Firebase導入後、この部分をFirebase認証に置き換える
 
 const currentPage = window.location.pathname.split("/").pop();
 
@@ -101,7 +100,7 @@ const rarityData = {
 // ========================================
 // 初期カテゴリー
 // ========================================
-const categoryData = {
+let categoryData = {
     1: {
         id: 1,
         name: "日本を制覇しよう",
@@ -137,7 +136,7 @@ const categoryData = {
 // ========================================
 // 初期トロフィー
 // ========================================
-const trophyData = {};
+let trophyData = {};
 // ========================================
 // 地方と都道府県
 // ========================================
@@ -725,6 +724,7 @@ function updateJapanConquestTrophies() {
         }
 
     });
+    
 
 
     // ====================================
@@ -798,9 +798,58 @@ function updateJapanConquestTrophies() {
             null;
 
     }
-
+    saveAppData();
 }
 
+// ==============================
+// LocalStorage 保存・読み込み
+// ==============================
+
+const STORAGE_KEY = "trophyAppData";
+
+function saveAppData() {
+    localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+            categoryData: categoryData,
+            trophyData: trophyData
+        })
+    );
+}
+
+function loadAppData() {
+    const savedData = localStorage.getItem(STORAGE_KEY);
+
+    // 保存データがなければ初期データをそのまま使う
+    if (!savedData) {
+        return;
+    }
+
+    try {
+        const data = JSON.parse(savedData);
+
+        if (data.categoryData) {
+            categoryData = data.categoryData;
+        }
+
+        if (data.trophyData) {
+            trophyData = data.trophyData;
+        }
+
+    } catch (error) {
+        console.error("LocalStorageの読み込みに失敗しました:", error);
+    }
+}
+loadAppData();
+// ページに戻ってきたときにLocalStorageから最新データを読み込む
+window.addEventListener("pageshow", () => {
+    loadAppData();
+
+    renderTrophyList();
+    renderCategoryList();
+
+    updateRarityPopupSummary();
+});
 //　設定ポップアップ用
 // 要素取得
 const trophyList =
@@ -1982,6 +2031,8 @@ categoryData[editNameTargetId].name = newName;
 renderCategoryList();
 updateCategoryPageSummary();
 
+saveAppData();
+
 if (categoryPageTitle) {
     categoryPageTitle.textContent = newName;
 }
@@ -1996,11 +2047,13 @@ if (categoryPageTitle) {
 
     trophy.name = newName;
 
+    saveAppData();
+
     trophy.subtitle =
         editSubtitleInput
             ? editSubtitleInput.value.trim()
             : "";
-
+    saveAppData();
     renderTrophyList();
 
 }
@@ -2193,6 +2246,8 @@ if (editImageConfirmButton) {
 
 category.image = selectedImageData;
 
+saveAppData();
+
 renderCategoryList();
 updateCategoryPageSummary();
 
@@ -2203,6 +2258,8 @@ updateCategoryPageSummary();
         if (!trophy) return;
 
         trophy.image = selectedImageData;
+
+        saveAppData();
 
         renderTrophyList();
 
@@ -2417,7 +2474,11 @@ wrapper.addEventListener("pointermove", (event) => {
     // =========================
     // まだドラッグしていない
     // =========================
-    if (!isDragging || !dragPreview) {
+    if (
+    !isDragging &&
+    !dragPreview &&
+    event.pointerType === "touch"
+) {
 
         const deltaY =
             lastTouchY - event.clientY;
@@ -2571,6 +2632,8 @@ if (insertBeforeItem) {
 
         });
 
+        saveAppData();
+
         // ドラッグ終了直後のページ移動を防ぐ
         wrapper.addEventListener(
             "click",
@@ -2706,7 +2769,11 @@ wrapper.addEventListener("pointermove", (event) => {
     // =========================
     // まだドラッグしていない
     // =========================
-    if (!isDragging || !dragPreview) {
+    if (
+    !isDragging &&
+    !dragPreview &&
+    event.pointerType === "touch"
+) {
 
         const deltaY =
             lastTouchY - event.clientY;
@@ -2906,6 +2973,8 @@ if (insertBeforeItem) {
 
         });
 
+        saveAppData();
+
         // ドラッグ終了直後のページ移動を防ぐ
         wrapper.addEventListener(
             "click",
@@ -3046,6 +3115,8 @@ if (changeCategoryConfirmButton) {
     if (!trophy) return;
 
     trophy.categoryId = selectedCategoryId;
+    
+    saveAppData();
 
     closeChangeCategoryModal();
 
@@ -3210,6 +3281,8 @@ if (changeRarityConfirmButton) {
 
     trophy.rarity = selectedRarity;
 
+    saveAppData();
+
     renderTrophyList();
 
     closeChangeRarityModal();
@@ -3331,6 +3404,8 @@ if (changeCompleteDateConfirmButton) {
             trophy.completedDate =
                 `${year}/${month}/${day}`;
 
+            saveAppData();
+
             renderTrophyList();
 
             closeChangeCompleteDateModal();
@@ -3407,6 +3482,8 @@ if (deleteTrophyConfirmButton) {
         delete trophyData[deleteTargetTrophyId];
 
         renderTrophyList();
+
+        saveAppData();
 
         if (deleteTrophyModal) {
             deleteTrophyModal.classList.remove("show");
@@ -3512,6 +3589,7 @@ if (toggleCompleteButton) {
                 trophy.completedDate =
                     null;
             }
+            saveAppData();
             // =================================
             // 地方・日本制覇を自動判定
             // =================================
@@ -3632,6 +3710,7 @@ if (deleteCategoryFinalConfirmButton) {
 
         // カテゴリー本体を削除
         delete categoryData[targetCategoryId];
+        saveAppData();
         if (
     categoryPageId !== null &&
     Number(categoryPageId) === targetCategoryId
@@ -4113,6 +4192,8 @@ if (createButton) {
                 order: newOrder
             };
 
+            saveAppData();
+
             renderCategoryList();
             closeCreateCategoryModal();
         }
@@ -4380,6 +4461,8 @@ if (createTrophyConfirmButton) {
                 completedDate: null,
                 order: newOrder
             };
+
+            saveAppData();
 
             renderTrophyList();
             renderCategoryList();
