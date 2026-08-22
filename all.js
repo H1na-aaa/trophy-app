@@ -2425,9 +2425,6 @@ pressTimer = setTimeout(() => {
         "category-dragging"
     );
 
-                document.body.classList.add(
-                    "category-dragging"
-                );
 
             // 指についてくる複製を作成
             dragPreview =
@@ -2577,6 +2574,104 @@ wrapper.addEventListener("pointermove", (event) => {
 
 });
 
+function finishDrag() {
+
+    stopAutoScroll();
+
+    if (
+        dropIndicator &&
+        dropIndicator.parentElement
+    ) {
+
+        dropIndicator.parentElement.insertBefore(
+            wrapper,
+            dropIndicator
+        );
+
+        dropIndicator.remove();
+        dropIndicator = null;
+    }
+
+    clearTimeout(pressTimer);
+    pressTimer = null;
+
+    if (moveFrame !== null) {
+        cancelAnimationFrame(moveFrame);
+        moveFrame = null;
+    }
+
+    if (!isDragging) {
+        return;
+    }
+
+    isDragging = false;
+
+    wrapper.classList.remove("dragging");
+
+    document.body.classList.remove(
+        "category-dragging"
+    );
+
+    if (dragPreview) {
+
+        dragPreview.remove();
+        dragPreview = null;
+
+    }
+
+    const wrappers =
+        document.querySelectorAll(
+            "#category-list-container " +
+            ".category-wrapper"
+        );
+
+    wrappers.forEach((item, index) => {
+
+        const id =
+            Number(item.dataset.categoryId);
+
+        if (categoryData[id]) {
+
+            categoryData[id].order =
+                index;
+
+        }
+
+    });
+
+    saveAppData();
+
+    // ドラッグ終了直後のページ移動を防ぐ
+    wrapper.addEventListener(
+        "click",
+        (event) => {
+
+            event.preventDefault();
+            event.stopImmediatePropagation();
+
+        },
+        {
+            capture: true,
+            once: true
+        }
+    );
+
+}
+
+
+// 指を離した
+wrapper.addEventListener(
+    "pointerup",
+    finishDrag
+);
+
+
+// タッチがキャンセルされた
+wrapper.addEventListener(
+    "pointercancel",
+    finishDrag
+);
+
 }
 
 //　トロフィー並び替え
@@ -2634,10 +2729,6 @@ pressTimer = setTimeout(() => {
     document.body.classList.add(
         "trophy-dragging"
     );
-
-                document.body.classList.add(
-                    "trophy-dragging"
-                );
 
             // 指についてくる複製を作成
             dragPreview =
