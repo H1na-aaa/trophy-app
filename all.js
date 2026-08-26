@@ -194,7 +194,7 @@ const regionPrefectures = {
         "愛媛県",
         "高知県"
     ],
-    "九州・沖縄地方": [
+    "九州沖縄地方": [
         "福岡県",
         "佐賀県",
         "長崎県",
@@ -329,7 +329,7 @@ const regionImages = {
     "近畿地方": "image/japan/kinki.webp",
     "中国地方": "image/japan/tyuugoku.webp",
     "四国地方": "image/japan/sikoku.webp",
-    "九州・沖縄地方": "image/japan/kyuusyuu.webp"
+    "九州沖縄地方": "image/japan/kyuusyuu.webp"
 };
 // ========================================
 // 初期トロフィーを自動生成
@@ -832,9 +832,7 @@ function loadAppData() {
             categoryData = data.categoryData;
         }
 
-        if (data.trophyData) {
-            trophyData = data.trophyData;
-        }
+
 
     } catch (error) {
         console.error("LocalStorageの読み込みに失敗しました:", error);
@@ -1521,11 +1519,31 @@ card.className = [
 
         `;
 
-                const trophyCard =
+        const trophyCard =
             card.querySelector(".trophy-item-card");
 
         const settingButton =
             card.querySelector(".trophy-item-setting");
+
+            // ドラッグハンドル
+const trophyDragHandle =
+    document.createElement("button");
+
+trophyDragHandle.type = "button";
+
+trophyDragHandle.className =
+    "trophy-drag-handle";
+
+trophyDragHandle.setAttribute(
+    "aria-label",
+    "トロフィーを並び替える"
+);
+
+trophyDragHandle.textContent = "⋮⋮";
+
+card.appendChild(
+    trophyDragHandle
+);
 
 
         if (trophyCard) {
@@ -2342,7 +2360,6 @@ function updateAutoScroll(pointerY) {
                 (1 - distance / edgeSize);
         }
         if (speed !== 0) {
-            window.scrollBy(0, speed);
             autoScrollAnimation =
                 requestAnimationFrame(scroll);
         } else {
@@ -2370,9 +2387,95 @@ function stopAutoScroll() {
 //　要素取得
 let selectedCategoryId = null;
 //　一覧を描画
-function enableCategoryDrag(wrapper) {
+/* =========================================================
+   ドラッグ中の画面端自動スクロール
+========================================================= */
 
-    let pressTimer = null;
+function updateAutoScroll(pointerY) {
+
+    autoScrollY = pointerY;
+
+    if (autoScrollAnimation !== null) {
+        return;
+    }
+
+    function scroll() {
+
+        const edgeSize = 100;
+        const maxSpeed = 10;
+
+        let speed = 0;
+
+        // 上端
+        if (autoScrollY < edgeSize) {
+
+            const ratio =
+                1 - autoScrollY / edgeSize;
+
+            speed = -maxSpeed * ratio;
+
+        }
+
+        // 下端
+        else if (
+            autoScrollY >
+            window.innerHeight - edgeSize
+        ) {
+
+            const distance =
+                window.innerHeight - autoScrollY;
+
+            const ratio =
+                1 - distance / edgeSize;
+
+            speed = maxSpeed * ratio;
+        }
+
+        if (speed !== 0) {
+
+            window.scrollBy(0, speed);
+
+            autoScrollAnimation =
+                requestAnimationFrame(scroll);
+
+        } else {
+
+            autoScrollAnimation = null;
+        }
+    }
+
+    autoScrollAnimation =
+        requestAnimationFrame(scroll);
+}
+
+
+function stopAutoScroll() {
+
+    if (autoScrollAnimation !== null) {
+
+        cancelAnimationFrame(
+            autoScrollAnimation
+        );
+
+        autoScrollAnimation = null;
+    }
+}
+
+
+/* =========================================================
+   カテゴリー並び替え
+========================================================= */
+
+function enableCategoryDrag(wrapper) {
+    const dragHandle =
+        wrapper.querySelector(
+            ".category-drag-handle"
+        );
+
+    if (!dragHandle) {
+        return;
+    }
+
     let isDragging = false;
     let activePointerId = null;
 
@@ -2383,618 +2486,367 @@ function enableCategoryDrag(wrapper) {
     let pointerOffsetY = 0;
 
     let moveFrame = null;
+
     let latestPointerX = 0;
     let latestPointerY = 0;
-    let lastTouchY = 0;
-    let isTouchScrolling = false;
-    let dragPreviewHeight = 0;
 
 
-    wrapper.addEventListener("pointerdown", (event) => {
+    // =========================================
+    // 指を置いた
+    // =========================================
 
-        if (
-            event.target.closest(".category-setting")
-        ) {
+    dragHandle.addEventListener(
+    "pointerdown",
+    (event) => {
+
+        if (!event.isPrimary) {
             return;
         }
 
-        if (!event.isPrimary) return;
+        event.preventDefault();
+        event.stopPropagation();
 
-        activePointerId = event.pointerId;
+        activePointerId =
+            event.pointerId;
 
-        lastTouchY = event.clientY;
+        latestPointerX =
+            event.clientX;
 
-        isTouchScrolling = false;
+        latestPointerY =
+            event.clientY;
 
-        const originalRect =
+        const rect =
             wrapper.getBoundingClientRect();
 
         pointerOffsetX =
-            event.clientX - originalRect.left;
+            event.clientX - rect.left;
 
         pointerOffsetY =
-            event.clientY - originalRect.top;
-
-pressTimer = setTimeout(() => {
-
-    isDragging = true;
-
-    wrapper.classList.add("dragging");
-
-    document.body.classList.add(
-        "category-dragging"
-    );
+            event.clientY - rect.top;
 
 
-            // 指についてくる複製を作成
-            dragPreview =
-                wrapper.cloneNode(true);
+        // =========================
+        // すぐドラッグ開始
+        // =========================
 
-            dragPreview.classList.add(
-                "category-drag-preview"
-            );
+        isDragging = true;
 
-            dragPreview.style.width =
-                `${originalRect.width}px`;
+        wrapper.classList.add(
+            "dragging"
+        );
 
-            dragPreview.style.height =
-                `${originalRect.height}px`;
-
-            dragPreviewHeight = originalRect.height;
-
-            dragPreview.style.left =
-                `${event.clientX - pointerOffsetX}px`;
-
-            dragPreview.style.top =
-                `${event.clientY - pointerOffsetY}px`;
-
-            document.body.appendChild(
-                dragPreview
-            );
-            dropIndicator =
-                document.createElement("div");
-
-            dropIndicator.className =
-                "category-drop-indicator";
-
-            wrapper.setPointerCapture(
-                activePointerId
-            );
-
-        }, 500);
-
-    });
+        document.body.classList.add(
+            "category-dragging"
+        );
 
 
-wrapper.addEventListener("pointermove", (event) => {
+        // =========================
+        // ドラッグプレビュー
+        // =========================
 
-    latestPointerX = event.clientX;
-    latestPointerY = event.clientY;
+        dragPreview =
+            wrapper.cloneNode(true);
 
-    // =========================
-    // ドラッグしていない
-    // =========================
-    if (
-    !isDragging &&
-    !dragPreview &&
-    event.pointerType === "touch"
-) {
+        dragPreview.classList.add(
+            "category-drag-preview"
+        );
 
-    const deltaY =
-        lastTouchY - event.clientY;
+        dragPreview.style.width =
+            `${rect.width}px`;
 
-    // 指が実際に動いたときだけ
-    // 通常スクロールを開始
-    if (Math.abs(deltaY) > 5) {
+        dragPreview.style.height =
+            `${rect.height}px`;
 
-        isTouchScrolling = true;
-
-        clearTimeout(pressTimer);
-        pressTimer = null;
-
-        window.scrollBy(0, deltaY);
-
-        lastTouchY = event.clientY;
-    }
-
-    return;
-}
-    // =========================
-    // ドラッグ中
-    // =========================
-    if (!isDragging || !dragPreview) {
-        return;
-    }
-
-    event.preventDefault();
-
-    updateAutoScroll(latestPointerY);
-
-    // 前回の画面更新が終わっていなければ追加しない
-    if (moveFrame !== null) {
-        return;
-    }
-
-    moveFrame = requestAnimationFrame(() => {
-
-        moveFrame = null;
-
-        // 指についてくる複製
         dragPreview.style.left =
             `${latestPointerX - pointerOffsetX}px`;
 
         dragPreview.style.top =
             `${latestPointerY - pointerOffsetY}px`;
 
-        const container =
-            document.getElementById(
-                "category-list-container"
-            );
-
-        if (!container) return;
-
-        const insertPositionY =
-            latestPointerY;
-
-        const otherWrappers = [
-            ...container.querySelectorAll(
-                ".category-wrapper"
-            )
-        ].filter(
-            (item) => item !== wrapper
+        document.body.appendChild(
+            dragPreview
         );
 
-        const insertBeforeItem =
-            otherWrappers.find((item) => {
 
-                const rect =
-                    item.getBoundingClientRect();
+        // =========================
+        // ドロップ位置
+        // =========================
 
-                return (
-                    insertPositionY <
-                    rect.top + rect.height / 2
-                );
-            });
-
-        if (insertBeforeItem) {
-
-            container.insertBefore(
-                dropIndicator,
-                insertBeforeItem
+        dropIndicator =
+            document.createElement(
+                "div"
             );
 
-        } else {
+        dropIndicator.className =
+            "category-drop-indicator";
 
-            container.appendChild(
+
+        // =========================
+        // ポインターをハンドルに固定
+        // =========================
+
+        try {
+
+            dragHandle.setPointerCapture(
+                activePointerId
+            );
+
+        } catch (error) {
+
+            console.log(
+                "PointerCapture error:",
+                error
+            );
+        }
+
+    }
+);
+
+
+    // =========================================
+    // 指が動いた
+    // =========================================
+
+    dragHandle.addEventListener("pointermove", (event) => {
+
+        latestPointerX = event.clientX;
+        latestPointerY = event.clientY;
+
+
+        // =====================================
+        // 通常時
+        //
+        // JSではスクロールしない
+        // ブラウザに完全に任せる
+        // =====================================
+
+        if (
+            !isDragging ||
+            !dragPreview
+        ) {
+
+            return;
+        }
+
+
+        // =====================================
+        // ドラッグ中
+        // =====================================
+
+        event.preventDefault();
+
+        updateAutoScroll(
+            latestPointerY
+        );
+
+
+        if (moveFrame !== null) {
+            return;
+        }
+
+
+        moveFrame =
+            requestAnimationFrame(() => {
+
+                moveFrame = null;
+
+
+                // =============================
+                // プレビュー移動
+                // =============================
+
+                dragPreview.style.left =
+                    `${latestPointerX - pointerOffsetX}px`;
+
+                dragPreview.style.top =
+                    `${latestPointerY - pointerOffsetY}px`;
+
+
+                const container =
+                    document.getElementById(
+                        "category-list-container"
+                    );
+
+                if (!container) {
+                    return;
+                }
+
+
+                const insertPositionY =
+                    latestPointerY;
+
+
+                // =============================
+                // 他のカテゴリー
+                // =============================
+
+                const otherWrappers = [
+                    ...container.querySelectorAll(
+                        ".category-wrapper"
+                    )
+                ].filter(
+                    (item) =>
+                        item !== wrapper
+                );
+
+
+                const insertBeforeItem =
+                    otherWrappers.find(
+                        (item) => {
+
+                            const rect =
+                                item.getBoundingClientRect();
+
+                            return (
+                                insertPositionY <
+                                rect.top +
+                                rect.height / 2
+                            );
+                        }
+                    );
+
+
+                // =============================
+                // ドロップ位置
+                // =============================
+
+                if (insertBeforeItem) {
+
+                    container.insertBefore(
+                        dropIndicator,
+                        insertBeforeItem
+                    );
+
+                } else {
+
+                    container.appendChild(
+                        dropIndicator
+                    );
+                }
+
+            });
+
+    });
+
+
+    // =========================================
+    // ドラッグ終了
+    // =========================================
+
+    function finishDrag() {
+
+        stopAutoScroll();
+
+        if (moveFrame !== null) {
+
+            cancelAnimationFrame(
+                moveFrame
+            );
+
+            moveFrame = null;
+        }
+
+
+        // =====================================
+        // ドロップ位置があれば移動
+        // =====================================
+
+        if (
+            isDragging &&
+            dropIndicator &&
+            dropIndicator.parentElement
+        ) {
+
+            dropIndicator.parentElement.insertBefore(
+                wrapper,
                 dropIndicator
             );
         }
 
-    });
 
-});
+        if (dropIndicator) {
 
-function finishDrag() {
+            dropIndicator.remove();
 
-    stopAutoScroll();
-
-    if (
-        dropIndicator &&
-        dropIndicator.parentElement
-    ) {
-
-        dropIndicator.parentElement.insertBefore(
-            wrapper,
-            dropIndicator
-        );
-
-        dropIndicator.remove();
-        dropIndicator = null;
-    }
-
-    clearTimeout(pressTimer);
-    pressTimer = null;
-
-    if (moveFrame !== null) {
-        cancelAnimationFrame(moveFrame);
-        moveFrame = null;
-    }
-
-    if (!isDragging) {
-        return;
-    }
-
-    isDragging = false;
-
-    wrapper.classList.remove("dragging");
-
-    document.body.classList.remove(
-        "category-dragging"
-    );
-
-    if (dragPreview) {
-
-        dragPreview.remove();
-        dragPreview = null;
-
-    }
-
-    const wrappers =
-        document.querySelectorAll(
-            "#category-list-container " +
-            ".category-wrapper"
-        );
-
-    wrappers.forEach((item, index) => {
-
-        const id =
-            Number(item.dataset.categoryId);
-
-        if (categoryData[id]) {
-
-            categoryData[id].order =
-                index;
-
+            dropIndicator = null;
         }
 
-    });
 
-    saveAppData();
+        // =====================================
+        // ドラッグしていなかった
+        // =====================================
 
-    // ドラッグ終了直後のページ移動を防ぐ
-    wrapper.addEventListener(
-        "click",
-        (event) => {
-
-            event.preventDefault();
-            event.stopImmediatePropagation();
-
-        },
-        {
-            capture: true,
-            once: true
-        }
-    );
-
-}
-
-
-// 指を離した
-wrapper.addEventListener(
-    "pointerup",
-    finishDrag
-);
-
-
-// タッチがキャンセルされた
-wrapper.addEventListener(
-    "pointercancel",
-    finishDrag
-);
-
-}
-
-//　トロフィー並び替え
-function enableTrophyDrag(wrapper) {
-
-    let pressTimer = null;
-    let isDragging = false;
-    let activePointerId = null;
-
-    let dragPreview = null;
-    let dropIndicator = null;
-
-    let pointerOffsetX = 0;
-    let pointerOffsetY = 0;
-
-    let moveFrame = null;
-    let latestPointerX = 0;
-    let latestPointerY = 0;
-    let lastTouchY = 0;
-    let isTouchScrolling = false;
-    let dragPreviewHeight = 0;
-
-
-    wrapper.addEventListener("pointerdown", (event) => {
-
-        if (
-            event.target.closest(".trophy-item-setting")
-        ) {
+        if (!isDragging) {
             return;
         }
 
-        if (!event.isPrimary) return;
-
-        activePointerId = event.pointerId;
-
-        lastTouchY = event.clientY;
-
-        isTouchScrolling = false;
-
-        const originalRect =
-            wrapper.getBoundingClientRect();
-
-        pointerOffsetX =
-            event.clientX - originalRect.left;
-
-        pointerOffsetY =
-            event.clientY - originalRect.top;
-
-pressTimer = setTimeout(() => {
-
-    isDragging = true;
-
-    wrapper.classList.add("dragging");
-
-    document.body.classList.add(
-        "trophy-dragging"
-    );
-
-            // 指についてくる複製を作成
-            dragPreview =
-                wrapper.cloneNode(true);
-
-            dragPreview.classList.add(
-                "trophy-drag-preview"
-            );
-
-            dragPreview.style.width =
-                `${originalRect.width}px`;
-
-            dragPreview.style.height =
-                `${originalRect.height}px`;
-
-            dragPreviewHeight = originalRect.height;
-
-            dragPreview.style.left =
-                `${event.clientX - pointerOffsetX}px`;
-
-            dragPreview.style.top =
-                `${event.clientY - pointerOffsetY}px`;
-
-            document.body.appendChild(
-                dragPreview
-            );
-            dropIndicator =
-                document.createElement("div");
-
-            dropIndicator.className =
-                "trophy-drop-indicator";
-
-            wrapper.setPointerCapture(
-                activePointerId
-            );
-
-        }, 500);
-
-    });
-
-
-wrapper.addEventListener("pointermove", (event) => {
-
-    latestPointerX = event.clientX;
-    latestPointerY = event.clientY;
-
-    // =========================
-    // ドラッグしていない
-    // =========================
-if (
-    !isDragging &&
-    !dragPreview &&
-    event.pointerType === "touch"
-) {
-
-    const deltaY =
-        lastTouchY - event.clientY;
-
-    // 指が実際に動いたときだけ
-    // 通常スクロールを開始
-    if (Math.abs(deltaY) > 5) {
-
-        isTouchScrolling = true;
-
-        clearTimeout(pressTimer);
-        pressTimer = null;
-
-        window.scrollBy(0, deltaY);
-
-        lastTouchY = event.clientY;
-    }
-
-    return;
-}
-
-// =========================
-// ドラッグ中
-// =========================
-
-if (!isDragging || !dragPreview) {
-    return;
-}
-
-event.preventDefault();
-
-updateAutoScroll(latestPointerY);
-
-    // 前回の画面更新が終わっていなければ追加実行しない
-    if (moveFrame !== null) {
-        return;
-    }
-
-    moveFrame = requestAnimationFrame(() => {
-
-        moveFrame = null;
-
-        // 指についてくる複製だけを移動
-        dragPreview.style.left =
-            `${latestPointerX - pointerOffsetX}px`;
-
-        dragPreview.style.top =
-            `${latestPointerY - pointerOffsetY}px`;
-
-        const container =
-            document.getElementById(
-                "category-trophy-list-container"
-            );
-
-        if (!container) return;
-
-        const insertPositionY = latestPointerY;
-
-// 持っているトロフィーがクリア済みか
-const draggingCompleted =
-    wrapper.classList.contains(
-        "trophy-item-completed"
-    );
-
-// 同じクリア状態のカードだけを対象にする
-const otherWrappers = [
-    ...container.querySelectorAll(
-        ".trophy-item"
-    )
-].filter((item) => {
-
-    if (item === wrapper) {
-        return false;
-    }
-
-    const itemCompleted =
-        item.classList.contains(
-            "trophy-item-completed"
-        );
-
-    return itemCompleted === draggingCompleted;
-
-});
-
-const insertBeforeItem =
-    otherWrappers.find((item) => {
-
-        const rect =
-            item.getBoundingClientRect();
-
-        return (
-            insertPositionY <
-            rect.top + rect.height / 2
-        );
-
-    });
-
-if (insertBeforeItem) {
-
-    container.insertBefore(
-        dropIndicator,
-        insertBeforeItem
-    );
-
-} else if (!draggingCompleted) {
-
-    /*
-    未クリアの最後へ移動する場合でも、
-    クリア済みの見出しより前に置く
-    */
-    const completedStackToggle =
-        container.querySelector(
-            ".completed-stack-toggle"
-        );
-
-    if (completedStackToggle) {
-
-        container.insertBefore(
-            dropIndicator,
-            completedStackToggle
-        );
-
-    } else {
-
-        container.appendChild(
-            dropIndicator
-        );
-
-    }
-
-} else {
-
-    // クリア済みならクリア済みグループの最後へ
-    container.appendChild(
-        dropIndicator
-    );
-
-}
-
-    });
-
-});
-
-    function finishDrag() {
-        stopAutoScroll();
-        if (
-    dropIndicator &&
-    dropIndicator.parentElement
-) {
-
-    dropIndicator.parentElement.insertBefore(
-        wrapper,
-        dropIndicator
-    );
-
-    dropIndicator.remove();
-    dropIndicator = null;
-
-}
-
-        clearTimeout(pressTimer);
-
-        if (moveFrame !== null) {
-        cancelAnimationFrame(moveFrame);
-        moveFrame = null;
-        }
-
-        if (!isDragging) return;
 
         isDragging = false;
 
-        wrapper.classList.remove("dragging");
+
+        wrapper.classList.remove(
+            "dragging"
+        );
 
         document.body.classList.remove(
-            "trophy-dragging"
+            "category-dragging"
         );
+
+
+        // =====================================
+        // プレビュー削除
+        // =====================================
 
         if (dragPreview) {
 
             dragPreview.remove();
-            dragPreview = null;
 
+            dragPreview = null;
         }
+
+
+        // =====================================
+        // 順番保存
+        // =====================================
 
         const wrappers =
             document.querySelectorAll(
-                "#category-trophy-list-container " +
-                ".trophy-item"
+                "#category-list-container " +
+                ".category-wrapper"
             );
 
-        wrappers.forEach((item, index) => {
+        wrappers.forEach(
+            (item, index) => {
 
-            const id =
-                Number(item.dataset.trophyId);
+                const id =
+                    Number(
+                        item.dataset.categoryId
+                    );
 
-            if (trophyData[id]) {
+                if (
+                    categoryData[id]
+                ) {
 
-                trophyData[id].order =
-                    index;
-
+                    categoryData[id].order =
+                        index;
+                }
             }
+        );
 
-        });
 
         saveAppData();
 
-        // ドラッグ終了直後のページ移動を防ぐ
+
+        // =====================================
+        // ドラッグ直後のクリック防止
+        // =====================================
+
         wrapper.addEventListener(
             "click",
             (event) => {
 
                 event.preventDefault();
+
                 event.stopImmediatePropagation();
 
             },
@@ -3003,22 +2855,505 @@ if (insertBeforeItem) {
                 once: true
             }
         );
-
     }
 
 
-    wrapper.addEventListener(
-        "pointerup",
+    // =========================================
+    // 指を離した
+    // =========================================
+
+dragHandle.addEventListener(
+    "pointerup",
         finishDrag
     );
 
-    wrapper.addEventListener(
+
+    // =========================================
+    // タッチキャンセル
+    // =========================================
+
+    dragHandle.addEventListener(
         "pointercancel",
         finishDrag
     );
 
 }
+/* =========================================================
+   トロフィー並び替え
+========================================================= */
 
+function enableTrophyDrag(wrapper) {
+
+    const dragHandle =
+        wrapper.querySelector(
+            ".trophy-drag-handle"
+        );
+
+    if (!dragHandle) {
+        return;
+    }
+
+    let isDragging = false;
+    let activePointerId = null;
+
+    let dragPreview = null;
+    let dropIndicator = null;
+
+    let pointerOffsetX = 0;
+    let pointerOffsetY = 0;
+
+    let moveFrame = null;
+
+    let latestPointerX = 0;
+    let latestPointerY = 0;
+
+
+    // =========================================
+    // 指を置いた
+    // =========================================
+
+    dragHandle.addEventListener(
+    "pointerdown",
+    (event) => {
+
+        if (!event.isPrimary) {
+            return;
+        }
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        activePointerId =
+            event.pointerId;
+
+        latestPointerX =
+            event.clientX;
+
+        latestPointerY =
+            event.clientY;
+
+        const rect =
+            wrapper.getBoundingClientRect();
+
+        pointerOffsetX =
+            event.clientX - rect.left;
+
+        pointerOffsetY =
+            event.clientY - rect.top;
+
+
+        // =========================
+        // すぐドラッグ開始
+        // =========================
+
+        isDragging = true;
+
+        wrapper.classList.add(
+            "dragging"
+        );
+
+        document.body.classList.add(
+            "trophy-dragging"
+        );
+
+
+        // =========================
+        // プレビュー
+        // =========================
+
+        dragPreview =
+            wrapper.cloneNode(true);
+
+        dragPreview.classList.add(
+            "trophy-drag-preview"
+        );
+
+        dragPreview.style.width =
+            `${rect.width}px`;
+
+        dragPreview.style.height =
+            `${rect.height}px`;
+
+        dragPreview.style.left =
+            `${latestPointerX - pointerOffsetX}px`;
+
+        dragPreview.style.top =
+            `${latestPointerY - pointerOffsetY}px`;
+
+        document.body.appendChild(
+            dragPreview
+        );
+
+
+        // =========================
+        // ドロップ位置
+        // =========================
+
+        dropIndicator =
+            document.createElement(
+                "div"
+            );
+
+        dropIndicator.className =
+            "trophy-drop-indicator";
+
+
+        // =========================
+        // PointerCapture
+        // =========================
+
+        try {
+
+            dragHandle.setPointerCapture(
+                activePointerId
+            );
+
+        } catch (error) {
+
+            console.log(
+                "PointerCapture error:",
+                error
+            );
+        }
+
+    }
+);
+
+
+    // =========================================
+    // 指が動いた
+    // =========================================
+
+    dragHandle.addEventListener("pointermove", (event) => {
+
+        latestPointerX = event.clientX;
+        latestPointerY = event.clientY;
+
+
+        // =====================================
+        // 通常スクロール
+        //
+        // JSでは何もしない
+        // =====================================
+
+        if (
+            !isDragging ||
+            !dragPreview
+        ) {
+
+            return;
+        }
+
+
+        // =====================================
+        // ドラッグ中
+        // =====================================
+
+        event.preventDefault();
+
+        updateAutoScroll(
+            latestPointerY
+        );
+
+
+        if (moveFrame !== null) {
+            return;
+        }
+
+
+        moveFrame =
+            requestAnimationFrame(() => {
+
+                moveFrame = null;
+
+
+                // =============================
+                // プレビュー移動
+                // =============================
+
+                dragPreview.style.left =
+                    `${latestPointerX - pointerOffsetX}px`;
+
+                dragPreview.style.top =
+                    `${latestPointerY - pointerOffsetY}px`;
+
+
+                const container =
+                    document.getElementById(
+                        "category-trophy-list-container"
+                    );
+
+                if (!container) {
+                    return;
+                }
+
+
+                const insertPositionY =
+                    latestPointerY;
+
+
+                // =============================
+                // 持っているトロフィーの状態
+                // =============================
+
+                const draggingCompleted =
+                    wrapper.classList.contains(
+                        "trophy-item-completed"
+                    );
+
+
+                // =============================
+                // 同じ状態のトロフィーだけ
+                // =============================
+
+                const otherWrappers = [
+                    ...container.querySelectorAll(
+                        ".trophy-item"
+                    )
+                ].filter(
+                    (item) => {
+
+                        if (
+                            item === wrapper
+                        ) {
+                            return false;
+                        }
+
+                        const itemCompleted =
+                            item.classList.contains(
+                                "trophy-item-completed"
+                            );
+
+                        return (
+                            itemCompleted ===
+                            draggingCompleted
+                        );
+                    }
+                );
+
+
+                // =============================
+                // 挿入位置
+                // =============================
+
+                const insertBeforeItem =
+                    otherWrappers.find(
+                        (item) => {
+
+                            const rect =
+                                item.getBoundingClientRect();
+
+                            return (
+                                insertPositionY <
+                                rect.top +
+                                rect.height / 2
+                            );
+                        }
+                    );
+
+
+                // =============================
+                // 未クリア
+                // =============================
+
+                if (insertBeforeItem) {
+
+                    container.insertBefore(
+                        dropIndicator,
+                        insertBeforeItem
+                    );
+
+                } else if (
+                    !draggingCompleted
+                ) {
+
+                    const completedStackToggle =
+                        container.querySelector(
+                            ".completed-stack-toggle"
+                        );
+
+
+                    if (
+                        completedStackToggle
+                    ) {
+
+                        container.insertBefore(
+                            dropIndicator,
+                            completedStackToggle
+                        );
+
+                    } else {
+
+                        container.appendChild(
+                            dropIndicator
+                        );
+                    }
+
+                } else {
+
+                    // =========================
+                    // クリア済み最後
+                    // =========================
+
+                    container.appendChild(
+                        dropIndicator
+                    );
+                }
+
+            });
+
+    });
+
+
+    // =========================================
+    // ドラッグ終了
+    // =========================================
+
+    function finishDrag() {
+
+        stopAutoScroll();
+
+        if (moveFrame !== null) {
+
+            cancelAnimationFrame(
+                moveFrame
+            );
+
+            moveFrame = null;
+        }
+
+
+        // =====================================
+        // ドロップ位置へ移動
+        // =====================================
+
+        if (
+            isDragging &&
+            dropIndicator &&
+            dropIndicator.parentElement
+        ) {
+
+            dropIndicator.parentElement.insertBefore(
+                wrapper,
+                dropIndicator
+            );
+        }
+
+
+        if (dropIndicator) {
+
+            dropIndicator.remove();
+
+            dropIndicator = null;
+        }
+
+
+        // =====================================
+        // ドラッグしていなかった
+        // =====================================
+
+        if (!isDragging) {
+            return;
+        }
+
+
+        isDragging = false;
+
+
+        wrapper.classList.remove(
+            "dragging"
+        );
+
+        document.body.classList.remove(
+            "trophy-dragging"
+        );
+
+
+        // =====================================
+        // プレビュー削除
+        // =====================================
+
+        if (dragPreview) {
+
+            dragPreview.remove();
+
+            dragPreview = null;
+        }
+
+
+        // =====================================
+        // 順番保存
+        // =====================================
+
+        const wrappers =
+            document.querySelectorAll(
+                "#category-trophy-list-container " +
+                ".trophy-item"
+            );
+
+        wrappers.forEach(
+            (item, index) => {
+
+                const id =
+                    Number(
+                        item.dataset.trophyId
+                    );
+
+                if (
+                    trophyData[id]
+                ) {
+
+                    trophyData[id].order =
+                        index;
+                }
+            }
+        );
+
+
+        saveAppData();
+
+
+        // =====================================
+        // ドラッグ直後のクリック防止
+        // =====================================
+
+        wrapper.addEventListener(
+            "click",
+            (event) => {
+
+                event.preventDefault();
+
+                event.stopImmediatePropagation();
+
+            },
+            {
+                capture: true,
+                once: true
+            }
+        );
+    }
+
+
+    // =========================================
+    // 指を離した
+    // =========================================
+
+    dragHandle.addEventListener(
+        "pointerup",
+        finishDrag
+    );
+
+
+    // =========================================
+    // タッチキャンセル
+    // =========================================
+
+    dragHandle.addEventListener(
+        "pointercancel",
+        finishDrag
+    );
+
+}
 
 function renderChangeCategoryList(currentCategoryId) {
 
@@ -3855,6 +4190,21 @@ categoryCard.addEventListener("click", () => {
         `category.html?id=${category.id}`;
 
 });
+// ドラッグハンドル
+const categoryDragHandle =
+    document.createElement("button");
+
+categoryDragHandle.type = "button";
+
+categoryDragHandle.className =
+    "category-drag-handle";
+
+categoryDragHandle.setAttribute(
+    "aria-label",
+    "カテゴリーを並び替える"
+);
+
+categoryDragHandle.textContent = "⋮⋮";
 
 // 設定ボタン
 if (category.isInitial !== true) {
@@ -3892,17 +4242,19 @@ if (category.isInitial !== true) {
     );
 
 
-    wrapper.append(
-        categoryCard,
-        settingButton
-    );
+wrapper.append(
+    categoryCard,
+    categoryDragHandle,
+    settingButton
+);
 
 } else {
 
     // 初期カテゴリーはカードだけ追加
-    wrapper.append(
-        categoryCard
-    );
+wrapper.append(
+    categoryCard,
+    categoryDragHandle
+);
 
 }
 

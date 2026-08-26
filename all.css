@@ -286,6 +286,7 @@ h3{
 .category-wrapper{
     position: relative;
     width: 100%;
+    margin-bottom: 0.5rem;
 }
 
 .category-list{
@@ -312,7 +313,6 @@ h3{
     background: #ffffff10;
     color: #ffffff;
     cursor: pointer;
-    margin-bottom: 0.5rem;
 }
 
 .category-image{
@@ -343,6 +343,7 @@ h3{
 .category-title{
     margin: 0;
     font-weight: bold;
+    padding-right: 4rem;
 }
 
 
@@ -350,11 +351,12 @@ h3{
     margin: 0;
     font-size: 0.25rem 0;
     text-align: right;
+    margin-right: 3rem;
 }
 
 
 .progress-bar{
-    width:100%;
+    margin-right: 3rem;
     height: 0.5em;
     background:#555555;
     border-radius:999rem;
@@ -375,10 +377,45 @@ h3{
 
 .category-wrapper,
 .trophy-item {
-touch-action: none;
     user-select: none;
     -webkit-user-select: none;
     -webkit-touch-callout: none;
+
+    /* カード本体は普通に縦スクロール */
+    touch-action: pan-y;
+}
+
+/* ドラッグハンドル */
+
+.category-drag-handle,
+.trophy-drag-handle {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 2rem;
+    height: 5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    border: none;
+    border-radius: 0.5rem;
+    background: #ffffff18;
+    color: #ffffff;
+    font-size: 1.2rem;
+    line-height: 1;
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+    /* ここだけブラウザスクロールさせない */
+    touch-action: none;
+    z-index: 20;
+}
+
+.category-drag-handle:active,
+.trophy-drag-handle:active {
+    cursor: grabbing;
 }
 
 /* 元の場所を示す薄いカード */
@@ -404,6 +441,13 @@ touch-action: none;
 }
 
 body.category-dragging,
+body.trophy-dragging {
+    overflow: hidden;
+}
+
+body.category-dragging {
+    overflow: hidden;
+}
 body.trophy-dragging {
     overflow: hidden;
 }
@@ -450,7 +494,7 @@ body.trophy-dragging {
 .category-setting{
     position: absolute;
     top: .5rem;
-    right: .5rem;
+    right: 3rem;
     width: 2rem;
     height: 2rem;
     display: flex;
@@ -461,7 +505,7 @@ body.trophy-dragging {
     background: #ffffff1f;
     border: 0.1rem solid #ffffff30;
     cursor: pointer;
-    z-index: 10;
+    z-index: 30;
 }
 
 .category-setting img{
@@ -724,6 +768,7 @@ body.trophy-dragging {
     justify-content:center;
     margin-left:1rem;
     margin-top: 1rem;
+    margin-right: 4rem;
 }
 
 .trophy-item-title{
@@ -824,7 +869,7 @@ body.trophy-dragging {
 .trophy-item-setting{
     position:absolute;
     top:.5rem;
-    right:.5rem;
+    right:3rem;
     width:2rem;
     height:2rem;
     display:flex;
@@ -835,6 +880,7 @@ body.trophy-dragging {
     background:#ffffff20;
     border:.1rem solid #ffffff30;
     cursor:pointer;
+    z-index: 30;
 }
 
 .trophy-item-setting img{
