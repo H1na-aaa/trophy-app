@@ -818,24 +818,38 @@ function saveAppData() {
 }
 
 function loadAppData() {
-    const savedData = localStorage.getItem(STORAGE_KEY);
 
-    // 保存データがなければ初期データをそのまま使う
+    const savedData =
+        localStorage.getItem(STORAGE_KEY);
+
+    // 保存データがなければ
+    // 初期データをそのまま使う
     if (!savedData) {
         return;
     }
 
     try {
-        const data = JSON.parse(savedData);
+
+        const data =
+            JSON.parse(savedData);
 
         if (data.categoryData) {
-            categoryData = data.categoryData;
+            categoryData =
+                data.categoryData;
         }
 
-
+        // ★ここ
+        if (data.trophyData) {
+            trophyData =
+                data.trophyData;
+        }
 
     } catch (error) {
-        console.error("LocalStorageの読み込みに失敗しました:", error);
+
+        console.error(
+            "LocalStorageの読み込みに失敗しました:",
+            error
+        );
     }
 }
 loadAppData();
@@ -952,6 +966,43 @@ const categoryPageId = categoryPageIdValue === null
     document.getElementById(
         "category-page-setting"
     );
+    if (
+    categoryPageSettingButton &&
+    categoryPageId !== null
+) {
+
+    const category =
+        categoryData[categoryPageId];
+
+    // 初期カテゴリー
+    if (
+        category &&
+        category.isInitial === true
+    ) {
+
+        categoryPageSettingButton.style.display =
+            "none";
+
+    } else {
+
+        // ユーザー作成カテゴリーだけ
+        // 設定ボタンを使えるようにする
+        categoryPageSettingButton.addEventListener(
+            "click",
+            (event) => {
+
+                event.stopPropagation();
+
+                openCategoryMenu(
+                    categoryPageSettingButton,
+                    categoryPageId
+                );
+
+            }
+        );
+
+    }
+}
 let hasJumpedToTargetTrophy = false;
 
 if (

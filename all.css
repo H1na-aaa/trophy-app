@@ -215,6 +215,7 @@ h3{
 
 .header-back.hidden{
     visibility: hidden;
+    pointer-events: none;
 }
 
 /* レアリティ別トロフィー */
