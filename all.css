@@ -1494,7 +1494,7 @@ body.trophy-dragging {
 /* クリア済み */
 .trophy-notification-label {
     margin: 0 0 0.2rem;
-    font-size: 0.8rem;
+    font-size: 0.7rem;
     letter-spacing: 0.12rem;
     color: #21d3ff;
 }
