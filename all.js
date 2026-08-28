@@ -1590,7 +1590,17 @@ trophyDragHandle.setAttribute(
     "トロフィーを並び替える"
 );
 
-trophyDragHandle.textContent = "⋮⋮";
+if (categoryPageId !== null) {
+
+    // カテゴリーページ
+    trophyDragHandle.textContent = "⋮⋮";
+
+} else {
+
+    // レアリティ別表示
+    trophyDragHandle.textContent = "";
+
+}
 
 card.appendChild(
     trophyDragHandle
