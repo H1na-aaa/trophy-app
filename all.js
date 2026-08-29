@@ -5257,6 +5257,12 @@ const trophyNotificationImage =
         "trophy-notification-image"
     );
 
+const trophyNotificationRarity =
+    document.getElementById(
+        "trophy-notification-rarity"
+    );
+
+
 const trophyNotificationTitle =
     document.getElementById(
         "trophy-notification-title"
@@ -5328,12 +5334,19 @@ function showNextTrophyNotification() {
     // 内容を反映
     // ------------------------------
 
-    if (trophyNotificationImage) {
+if (trophyNotificationRarity) {
 
-        trophyNotificationImage.src =
+    trophyNotificationRarity.src =
+        rarityData[trophy.rarity].image;
+
+}
+
+if (trophyNotificationImage) {
+
+    trophyNotificationImage.src =
         trophy.image;
 
-    }
+}
 
 
     if (trophyNotificationTitle) {

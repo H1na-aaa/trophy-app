@@ -1498,7 +1498,21 @@ body.trophy-dragging {
     letter-spacing: 0.12rem;
     color: #21d3ff;
 }
+/* 通知レアリティアイコンタイトル */
+.trophy-notification-title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-width: 0;
+}
 
+/* 通知レアリティアイコン */
+.trophy-notification-rarity {
+    width: 1rem;
+    height: 1rem;
+    object-fit: contain;
+    flex-shrink: 0;
+}
 
 /* タイトル */
 .trophy-notification-title {
