@@ -1004,23 +1004,6 @@ const categoryPageId = categoryPageIdValue === null
     }
 }
 let hasJumpedToTargetTrophy = false;
-
-if (
-    categoryPageSettingButton &&
-    categoryPageId !== null
-) {
-    categoryPageSettingButton.addEventListener(
-        "click",
-        (event) => {
-            event.stopPropagation();
-
-            openCategoryMenu(
-                categoryPageSettingButton,
-                categoryPageId
-            );
-        }
-    );
-}
         function updateCategoryPageSummary() {
 
     if (categoryPageId === null) return;
