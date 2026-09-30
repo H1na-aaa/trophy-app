@@ -2266,31 +2266,264 @@ if (editImageSelectButton) {
 
 if (editImageInput) {
 
-    editImageInput.addEventListener("change", (event) => {
+    editImageInput.addEventListener(
+        "change",
+        (event) => {
 
-    const file = event.target.files[0];
+            const file =
+                event.target.files[0];
 
-    if (!file) return;
+            if (!file) return;
 
-    selectedImage = file;
+            selectedImage = file;
 
-    const reader = new FileReader();
+            compressImage(file)
+                .then((compressedImage) => {
 
-    reader.onload = () => {
+                    selectedImageData =
+                        compressedImage;
 
-        selectedImageData = reader.result;
+                    editImagePreview.src =
+                        compressedImage;
 
-        editImagePreview.src = selectedImageData;
+                })
+                .catch((error) => {
 
-    };
+                    console.error(error);
 
-    reader.readAsDataURL(file);
+                    selectedImage = null;
+                    selectedImageData = null;
+
+                    alert(
+                        "画像の処理に失敗しました。"
+                    );
+
+                });
+
+        }
+    );
+
+}
+
+// 画像自動圧縮
+
+function compressImage(
+    file,
+    maxWidth = 800,
+    maxHeight = 800,
+    quality = 0.8
+) {
+
+    return new Promise((resolve, reject) => {
+
+        const reader = new FileReader();
+
+        reader.onload = (event) => {
+
+            const img = new Image();
+
+            img.onload = () => {
+
+                let width = img.width;
+                let height = img.height;
+
+                // 最大サイズを超えている場合だけ縮小
+                if (
+                    width > maxWidth ||
+                    height > maxHeight
+                ) {
+
+                    const scale = Math.min(
+                        maxWidth / width,
+                        maxHeight / height
+                    );
+
+                    width = Math.round(
+                        width * scale
+                    );
+
+                    height = Math.round(
+                        height * scale
+                    );
+
+                }
+
+                // Canvasを作成
+                const canvas =
+                    document.createElement("canvas");
+
+                canvas.width = width;
+                canvas.height = height;
+
+                const ctx =
+                    canvas.getContext("2d");
+
+                // PNGの透明部分を維持
+                ctx.clearRect(
+                    0,
+                    0,
+                    width,
+                    height
+                );
+
+                ctx.drawImage(
+                    img,
+                    0,
+                    0,
+                    width,
+                    height
+                );
+
+                let compressedData;
+
+                // PNGはPNGのまま保存
+                if (file.type === "image/png") {
+
+                    compressedData =
+                        canvas.toDataURL(
+                            "image/png"
+                        );
+
+                }
+
+                // JPEGはJPEGとして保存
+                else {
+
+                    compressedData =
+                        canvas.toDataURL(
+                            "image/jpeg",
+                            quality
+                        );
+
+                }
+
+                resolve(compressedData);
+
+            };
+
+            img.onerror = () => {
+
+                reject(
+                    new Error(
+                        "画像の読み込みに失敗しました。"
+                    )
+                );
+
+            };
+
+            img.src =
+                event.target.result;
+
+        };
+
+        reader.onerror = () => {
+
+            reject(
+                new Error(
+                    "ファイルの読み込みに失敗しました。"
+                )
+            );
+
+        };
+
+        reader.readAsDataURL(file);
 
     });
 
 }
+// 画像を初期状態に戻す
+const defaultImage =
+    "image/icon/default.webp";
 
+const categoryCreateImageReset =
+    document.getElementById(
+        "category-create-image-reset"
+    );
 
+if (categoryCreateImageReset) {
+
+    categoryCreateImageReset.addEventListener(
+        "click",
+        () => {
+
+            categoryCreateImageData = null;
+
+            if (categoryCreateImageInput) {
+                categoryCreateImageInput.value = "";
+            }
+
+            if (categoryCreatePreview) {
+                categoryCreatePreview.src =
+                    defaultImage;
+            }
+
+        }
+    );
+
+}
+
+const createTrophyImageReset =
+    document.getElementById(
+        "create-trophy-image-reset"
+    );
+
+if (createTrophyImageReset) {
+
+    createTrophyImageReset.addEventListener(
+        "click",
+        () => {
+
+            createTrophyImageData = null;
+
+            if (createTrophyImageInput) {
+                createTrophyImageInput.value = "";
+            }
+
+            if (createTrophyPreview) {
+                createTrophyPreview.src =
+                    defaultImage;
+            }
+
+        }
+    );
+
+}
+
+const editImageReset =
+    document.getElementById(
+        "edit-image-reset"
+    );
+if (editImageReset) {
+
+    editImageReset.addEventListener(
+        "click",
+        () => {
+
+            const defaultImage =
+                "image/icon/default.webp";
+
+            // 選択した画像をリセット
+            selectedImage = null;
+
+            // 変更後に保存する画像をデフォルトにする
+            selectedImageData =
+                defaultImage;
+
+            // ファイル選択もリセット
+            if (editImageInput) {
+                editImageInput.value = "";
+            }
+
+            // プレビューをデフォルト画像に戻す
+            if (editImagePreview) {
+                editImagePreview.src =
+                    defaultImage;
+            }
+
+        }
+    );
+
+}
 //　画像変更を保存する
 if (editImageConfirmButton) {
 
@@ -4530,29 +4763,38 @@ if (
         "change",
         (event) => {
 
-            const file = event.target.files[0];
+            const file =
+                event.target.files[0];
 
             if (!file) return;
 
-            const reader = new FileReader();
+            compressImage(file)
+                .then((compressedImage) => {
 
-            reader.onload = () => {
+                    categoryCreateImageData =
+                        compressedImage;
 
-                categoryCreateImageData =
-                    reader.result;
+                    categoryCreatePreview.src =
+                        compressedImage;
 
-                categoryCreatePreview.src =
-                    categoryCreateImageData;
+                })
+                .catch((error) => {
 
-            };
+                    console.error(error);
 
-            reader.readAsDataURL(file);
+                    categoryCreateImageData =
+                        null;
+
+                    alert(
+                        "画像の処理に失敗しました。"
+                    );
+
+                });
 
         }
     );
 
 }
-
 
 // カテゴリーを作成
 if (createButton) {
@@ -4754,28 +4996,38 @@ if (
         "change",
         (event) => {
 
-            const file = event.target.files[0];
+            const file =
+                event.target.files[0];
 
             if (!file) return;
 
-            const reader = new FileReader();
+            compressImage(file)
+                .then((compressedImage) => {
 
-            reader.onload = () => {
+                    createTrophyImageData =
+                        compressedImage;
 
-                createTrophyImageData = reader.result;
+                    createTrophyPreview.src =
+                        compressedImage;
 
-                createTrophyPreview.src =
-                    createTrophyImageData;
+                })
+                .catch((error) => {
 
-            };
+                    console.error(error);
 
-            reader.readAsDataURL(file);
+                    createTrophyImageData =
+                        null;
+
+                    alert(
+                        "画像の処理に失敗しました。"
+                    );
+
+                });
 
         }
     );
 
 }
-
 //　初期化
 function openCreateTrophyModal() {
 

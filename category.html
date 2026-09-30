@@ -123,13 +123,20 @@
             トロフィーを作成
         </h2>
         <!-- 画像 -->
-       <div class="edit-image-preview-wrapper">
+        <div class="edit-image-preview-wrapper">
             <img
                 class="edit-image-preview"
                 id="create-trophy-preview"
                 src="image/icon/default.webp"
                 alt="選択した画像のプレビュー">
-        </div>
+
+            <button
+                type="button"
+                class="image-preview-reset"
+                id="create-trophy-image-reset">
+                ×
+         </button>
+</div>
         <input
             type="file"
             id="create-trophy-image"
@@ -296,7 +303,14 @@
                 alt="選択した画像のプレビュー"
             >
 
-        </div>
+            <button
+                type="button"
+                class="image-preview-reset"
+                id="edit-image-reset">
+                ×
+            </button>
+
+</div>
 
         <input
             type="file"
